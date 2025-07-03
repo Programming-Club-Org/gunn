@@ -16,5 +16,5 @@
 
 ## Contributors
 [Krutarth Patel](mailto:krutarthpatel929@gmail.com)  
-[Sanika Nair](mailto:ce24b108@smail.iitm.ac.in)
-
+[Sanika Nair](mailto:ce24b108@smail.iitm.ac.in)  
+[Surya Srimukhi](mailto:sriluj045@gmail.com)   
