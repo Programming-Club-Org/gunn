@@ -2,7 +2,7 @@
 
 #include "Graph.h"              // your Graph class
 #include "GraphReader.h"        // read_graph_from_file(...)
-#include "GCNL.h"               // your existing GCNLayer
+#include "GCNTest.h"               // your existing GCNLayer
 #include "output.h"             // OutputConverter API
 #include <iostream>
 #include <vector>
@@ -22,16 +22,45 @@ int main(int argc, char** argv) {
 
     // 3) Run one GCN layer
     cout << "Enter output feature dimension: ";
-    int out_dim;
-    cin >> out_dim;
+    int out_dim,hidden_layers;
+    cout << "Enter number of hidden layers: ";
+    cin >> out_dim >> hidden_layers;
 
-    GCNLayer gcn(g.num_node_features, out_dim);
-    auto features = gcn.forward(g.node_features, g.adjacency_list);
+    vector<vector<float>> aggregated_features(g.num_nodes);
+
+     // Precompute degrees
+    vector<int> degrees(g.num_nodes);
+    for (int i = 0; i < g.num_nodes; i++) {
+        degrees[i] = g.adjacency_list[i].size();
+    }
+
+    int hidden_features=g.num_node_features;
+    GCNTestLayer gcn_in(g.num_node_features,hidden_features);
+    for(int i = 0; i < g.num_nodes; i++ ) {
+        vector<float> aggregated = gcn_in.aggregate_neighbors(i, g.node_features, g.adjacency_list, degrees);
+        aggregated_features.push_back(aggregated);
+    }
+
+    
+    auto curr_features=aggregated_features;
+    vector<vector<float>> out_features;
+
+    for(int layer = 1; layer <= hidden_layers; layer++ ) {
+        GCNTestLayer gcn_hid(hidden_features,hidden_features);
+        gcn_hid.forward(curr_features,g.adjacency_list);
+        out_features=gcn_hid.layer_features;
+        curr_features=out_features;
+    }
+
+    GCNTestLayer gcn_out(hidden_features,out_dim);
+    gcn_out.forward(curr_features,g.adjacency_list);
+    out_features=gcn_out.layer_features;
+
 
     cout << "=== Node Features (post-GCN) ===\n";
-    for (size_t i = 0; i < features.size(); ++i) {
+    for (size_t i = 0; i < out_features.size(); ++i) {
         cout << "Node " << i << ": ";
-        for (float val : features[i]) {
+        for (float val : out_features[i]) {
             cout << val << " ";
         }
         cout << "\n";
@@ -40,8 +69,8 @@ int main(int argc, char** argv) {
 
     // 4) Compute node‐level scores (sum of features)
     vector<float> nodeScores;
-    nodeScores.reserve(features.size());
-    for (auto &feat : features) {
+    nodeScores.reserve(out_features.size());
+    for (auto &feat : out_features) {
         float sum = accumulate(feat.begin(), feat.end(), 0.0f);
         nodeScores.push_back(sum);
     }

@@ -26,8 +26,16 @@ public:
      * All derived GNN layers must override this pure virtual method
      * to apply their specific aggregation or attention mechanisms.
      */
-    virtual vector<vector<float>> forward(
+    virtual void forward(
         const vector<vector<float>>& node_features,
         const vector<vector<int>>& adjacency_list
+    ) = 0;
+
+    // backward pass takes in gradients with respect to 
+    // the previous layer features and computes gradients with respect to
+    // weights of current layer and returns the gradients 
+    // with respect to features of the current layer.
+    virtual vector<vector<float>> backward(
+        vector<vector<float>>& grad_prev_features
     ) = 0;
 };

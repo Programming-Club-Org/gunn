@@ -47,7 +47,7 @@ float GCNTestLayer::linear_transform(
 }
 
 // Forward pass for GCN Layer
-vector<vector<float>> GCNTestLayer::forward(
+void GCNTestLayer::forward(
     const vector<vector<float>>& node_features,
     const vector<vector<int>>& adjacency_list
 ) {
@@ -68,5 +68,27 @@ vector<vector<float>> GCNTestLayer::forward(
         }
     }
 
-    return updated_features;
+    layer_features=updated_features;
+}
+
+// Backward pass for GCN Layer
+vector<vector<float>>  GCNTestLayer::backward(
+        vector<vector<float>>& grad_prev_features
+) {
+    vector<vector<float>> grad_curr_features;
+    int n=grad_prev_features.size();
+    int num_layer_features=grad_prev_features[0].size();
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < num_layer_features; j++) {
+            grad_weight_matrix[i][j]=0;
+            for(int row = 0; row < n; row++) {
+                grad_weight_matrix[i][j]+=grad_prev_features[row][j]*layer_features[row][i];
+            }
+            grad_curr_features[i][j]=0;
+            for(int row = 0; row < n; row++) {
+                grad_curr_features[i][j]+=grad_prev_features[i][row]*weight_matrix[j][row];
+            }
+        }
+    }
+    return grad_curr_features;
 }
