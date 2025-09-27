@@ -2,7 +2,8 @@
 
 #include "Graph.h"              // your Graph class
 #include "GraphReader.h"        // read_graph_from_file(...)
-#include "GCNTest.h"               // your existing GCNLayer
+#include "GCNTest.h"            // your existing GCNLayer
+#include "GCNPass.h"              
 #include "output.h"             // OutputConverter API
 #include <iostream>
 #include <vector>
@@ -10,6 +11,10 @@
 #include <functional>           // for function
 
 int main(int argc, char** argv) {
+    int out_dim;
+    int hidden_layers;
+    int epochs=5;
+    int learning_rate=0.05f;
     // 1) Grab the input filename
     if (argc < 2) {
         cerr << "Usage: " << argv[0] << " <graph_input_file>\n";
@@ -22,52 +27,63 @@ int main(int argc, char** argv) {
 
     // 3) Run one GCN layer
     cout << "Enter output feature dimension: ";
-    int out_dim,hidden_layers;
+    cin >> out_dim;
     cout << "Enter number of hidden layers: ";
-    cin >> out_dim >> hidden_layers;
+    cin >> hidden_layers;
 
-    vector<vector<float>> aggregated_features(g.num_nodes);
-
-     // Precompute degrees
-    vector<int> degrees(g.num_nodes);
-    for (int i = 0; i < g.num_nodes; i++) {
-        degrees[i] = g.adjacency_list[i].size();
+    cout << "Enter the expected values:\n";
+    vector<vector<float>> expected_value(g.num_nodes,vector<float>(out_dim));
+    for(int i = 0; i < g.num_nodes; i++) {
+        for(int j = 0; j < out_dim; j++) {
+            cin >> expected_value[i][j];
+        }
     }
 
-    int hidden_features=g.num_node_features;
-    GCNTestLayer gcn_in(g.num_node_features,hidden_features);
-    for(int i = 0; i < g.num_nodes; i++ ) {
-        vector<float> aggregated = gcn_in.aggregate_neighbors(i, g.node_features, g.adjacency_list, degrees);
-        aggregated_features.push_back(aggregated);
-    }
+    int hidden_dim=g.num_node_features;
+    bool test_first_epoch=true;
+    vector_Layer vl(hidden_layers,g.num_nodes,out_dim,hidden_dim);
+    /* if(test_first_epoch) {
+        for (auto& layer : vl.network_layer) {
+            for (int i = 0; i < layer.input_dim; i++) {
+                for (int j = 0; j < layer.output_dim; j++) {
+                    layer.weight_matrix[i][j] = 1.0f;
+                }
+            }
+        }
+    } */
 
-    
-    auto curr_features=aggregated_features;
-    vector<vector<float>> out_features;
-
-    for(int layer = 1; layer <= hidden_layers; layer++ ) {
-        GCNTestLayer gcn_hid(hidden_features,hidden_features);
-        gcn_hid.forward(curr_features,g.adjacency_list);
-        out_features=gcn_hid.layer_features;
-        curr_features=out_features;
-    }
-
-    GCNTestLayer gcn_out(hidden_features,out_dim);
-    gcn_out.forward(curr_features,g.adjacency_list);
-    out_features=gcn_out.layer_features;
-
-
-    cout << "=== Node Features (post-GCN) ===\n";
-    for (size_t i = 0; i < out_features.size(); ++i) {
-        cout << "Node " << i << ": ";
-        for (float val : out_features[i]) {
-            cout << val << " ";
+    for(int epoch_index = 1; epoch_index <= epochs; epoch_index++) {
+        vl.forward_pass(out_dim,hidden_dim,hidden_layers,g);
+        auto out_features = vl.network_layer[hidden_layers+1].layer_features;
+        cout << "=== Node Features after epoch " << epoch_index <<  "===\n";
+        for (size_t i = 0; i < out_features.size(); ++i) {
+            cout << "Node " << i << ": ";
+            for (float val : out_features[i]) {
+                cout << val << " ";
+            }
+            cout << "\n";
         }
         cout << "\n";
-    }
-    cout << "\n";
+        vl.backward_pass(learning_rate,expected_value);
 
-    // 4) Compute node‐level scores (sum of features)
+        /* auto out_features = vl.network_layer[hidden_layers+1].layer_features;
+
+
+
+        cout << "=== Node Features after epoch " << epoch_index <<  "===\n";
+        for (size_t i = 0; i < out_features.size(); ++i) {
+            cout << "Node " << i << ": ";
+            for (float val : out_features[i]) {
+                cout << val << " ";
+            }
+            cout << "\n";
+        }
+        cout << "\n"; */
+        test_first_epoch=false;
+    }    
+    
+
+    /* // 4) Compute node‐level scores (sum of features)
     vector<float> nodeScores;
     nodeScores.reserve(out_features.size());
     for (auto &feat : out_features) {
@@ -128,6 +144,6 @@ int main(int argc, char** argv) {
                   << " | score = " << edgeScores[i]
                   << "\n";
     }
-
+ */
     return 0;
 }

@@ -33,7 +33,7 @@ vector<float> GraphSAGELayer::aggregate_neighbors_mean(
     int neighbor_count = adjacency_list[node].size();
 
     if (neighbor_count > 0) {
-        for (int neighbor : adjacency_list[node]) {
+        for (int neighbor : adjacency_list[node]) {g
             for (int d = 0; d < input_dim; d++) {
                 neighbor_agg[d] += node_features[neighbor][d];
             }

@@ -8,12 +8,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # All source files
 set(SOURCE_FILES
-    GATL.cpp
-    GCNL.cpp
+    BaseLoss.cpp
+    GCNPass.cpp
     GCNTest.cpp
     Graph.cpp
     GraphReader.cpp
-    GraphSage.cpp
     output.cpp
     output_main.cpp
 )

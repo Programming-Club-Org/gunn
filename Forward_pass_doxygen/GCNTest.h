@@ -10,9 +10,16 @@ using namespace std;
 class GCNTestLayer : public BaseLayer {
 public:
 
+    int input_dim;              // dimension of input features
+    int output_dim;             // dimension of output features
+    
+    vector<vector<float>> weight_matrix; // weight matrix of shape [input_dim][output_dim]
     vector<vector<float>> grad_weight_matrix; // gradient of weight matrix
     vector<vector<float>> layer_features; // updated features
+    vector<vector<float>> cached_input_features; // Before applying relu and weight matrix
+    vector<vector<float>> cached_linear_output; // 
     
+    GCNTestLayer();
     // This constructor initialises the Layer with input and output dimensions
     // performs Xavier initialisation of weight matrix.
     GCNTestLayer(int input_dim, int output_dim);
@@ -45,9 +52,6 @@ public:
 
 
 private:
-    int input_dim;              // dimension of input features
-    int output_dim;             // dimension of output features
-    vector<vector<float>> weight_matrix; // weight matrix of shape [input_dim][output_dim]
     
     float relu(float x); // Applies ReLU function to a single value (Activation function)
 
