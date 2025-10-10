@@ -14,13 +14,11 @@ vector<vector<float>> BaseLoss::CrossEntropyLoss(
         vector<vector<float>> softmax(n,vector<float>(o_features,0.0f));
         vector<vector<float>> grad_CEL(n,vector<float>(o_features,0.0f));
         for(int i =0; i < n; i++) {
-            float max_val=*max_element(output_features[i].begin(), output_features[i].end());
             float exp_sum=0.0f;
             for(int j = 0; j < o_features; j++) {
                 exp_sum += exp(output_features[i][j]);
             }
             if (exp_sum == 0.0) exp_sum = numeric_limits<float>::min();
-            cout << "exp_sum " << exp_sum << endl;
             for(int k = 0; k < o_features; k++) {
                 softmax[i][k]=static_cast<float>(exp(output_features[i][k]))/exp_sum;
             }

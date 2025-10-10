@@ -28,7 +28,7 @@ public:
     // using the input features and the adjacency list
     void forward(
         const vector<vector<float>>& node_features, // feature matrix-[number of nodes][input_dim]
-        const vector<vector<int>>& adjacency_list // represents graph structure
+        vector<vector<float>>& weights
     ) override;
 
     // backward pass takes in gradients with respect to 
@@ -59,6 +59,7 @@ private:
     // the output for a single output dimension
     float linear_transform(
         const vector<float>& aggregated_features, // Aggregated and normalised neighbour features
+        vector<vector<float>>& weights, 
         int output_index                          // index of output dimension being computed
     );
 };

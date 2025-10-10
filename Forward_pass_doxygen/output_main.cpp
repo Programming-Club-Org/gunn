@@ -13,7 +13,7 @@
 int main(int argc, char** argv) {
     int out_dim;
     int hidden_layers;
-    int epochs=5;
+    int epochs=2;
     int learning_rate=0.05f;
     // 1) Grab the input filename
     if (argc < 2) {
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     int hidden_dim=g.num_node_features;
     bool test_first_epoch=true;
     vector_Layer vl(hidden_layers,g.num_nodes,out_dim,hidden_dim);
-    /* if(test_first_epoch) {
+    if(test_first_epoch) {
         for (auto& layer : vl.network_layer) {
             for (int i = 0; i < layer.input_dim; i++) {
                 for (int j = 0; j < layer.output_dim; j++) {
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
                 }
             }
         }
-    } */
+    } 
 
     for(int epoch_index = 1; epoch_index <= epochs; epoch_index++) {
         vl.forward_pass(out_dim,hidden_dim,hidden_layers,g);

@@ -28,7 +28,7 @@ public:
      */
     virtual void forward(
         const vector<vector<float>>& node_features,
-        const vector<vector<int>>& adjacency_list
+        vector<vector<float>>& weights
     ) = 0;
 
     // backward pass takes in gradients with respect to 
