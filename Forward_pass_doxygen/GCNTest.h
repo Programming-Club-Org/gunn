@@ -28,7 +28,8 @@ public:
     // using the input features and the adjacency list
     void forward(
         const vector<vector<float>>& node_features, // feature matrix-[number of nodes][input_dim]
-        vector<vector<float>>& weights
+        vector<vector<float>>& weights,
+        const vector<vector<int>>& adjacency_list
     ) override;
 
     // backward pass takes in gradients with respect to 

@@ -1,6 +1,7 @@
 // GCNL.cpp
 
 #include "GCNTest.h"
+#include "Forward_kernel.cuh"
 #include <random>
 #include <algorithm>
 #include <cmath>
@@ -56,25 +57,29 @@ float GCNTestLayer::linear_transform(
 // Forward pass for GCN Layer
 void GCNTestLayer::forward(
     const vector<vector<float>>& node_features,
-    vector<vector<float>>& weights
+    vector<vector<float>>& weights,
+    const vector<vector<int>>& adjacency_list
 ) {
     int n_nodes = node_features.size();
-    vector<vector<float>> updated_features(n_nodes, vector<float>(input_dim, 0.0f));
+    int num_in_features=weights.size();
+    int num_out_features=weights[0].size();
 
     cached_input_features=node_features;
     cached_linear_output.assign(n_nodes,vector<float>(input_dim,0.0f));
 
-    // Precompute degrees
-    for (int i = 0; i < n_nodes; i++) {
-        //vector<float> aggregated = aggregate_neighbors(i, node_features, adjacency_list, degrees);
-        for (int o = 0; o < input_dim; o++) {
-            float val = linear_transform(node_features[i], weights, o);
-            cached_linear_output[i][o] = val;
-            updated_features[i][o] = relu(val);
+    cached_linear_output=forward_kernel_call(n_nodes,
+                                            num_in_features,
+                                            num_out_features,
+                                            node_features,
+                                            weight_matrix,
+                                            adjacency_list);
+
+    for(int i = 0; i < n_nodes; i++) {
+        for(int j = 0; j < input_dim; j++) {
+            layer_features[i][j]=relu(cached_linear_output[i][j]);
         }
     }
-
-    layer_features=updated_features;
+    return;
 }
 
 // Backward pass for GCN Layer

@@ -22,18 +22,12 @@ void vector_Layer::forward_pass(
         const Graph& g
     ) {
         int n_nodes = g.num_nodes;
-        vector<int> degrees(n_nodes);
-        for (int i = 0; i < n_nodes; i++) {degrees[i] = g.adjacency_list[i].size();}
-
         network_layer[0].layer_features=g.node_features;
         network_layer[0].cached_linear_output=g.node_features;
-        vector<vector<float>> curr_features = g.node_features;
-        for (int layer = 1; layer < hidden_layers + 2; layer++) {
-            vector<vector<float>> aggregated(n_nodes);
-            for (int i = 0; i < n_nodes; i++) {
-                aggregated[i] = network_layer[layer-1].aggregate_neighbors(i, curr_features, g.adjacency_list, degrees);
-            }
-            network_layer[layer].forward(aggregated,network_layer[layer-1].weight_matrix);
+        vector<vector<float>> curr_features=g.node_features;
+
+        for(int layer = 1; layer < hidden_layers + 2; layer++) {
+            network_layer[layer].forward(curr_features,network_layer[layer-1].weight_matrix,g.adjacency_list);
             curr_features = network_layer[layer].layer_features;
         }
     }
