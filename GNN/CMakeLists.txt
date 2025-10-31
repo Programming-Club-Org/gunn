@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
-project(GraphGNN LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.18)
+project(GraphGNN LANGUAGES CXX CUDA)
 
 # Choose C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -17,11 +17,22 @@ set(SOURCE_FILES
     output_main.cpp
 )
 
+# CUDA Source files
+set(CUDA_SOURCES
+    Forward_kernel.cu
+)
+
 # Build the executable
-add_executable(graph_app ${SOURCE_FILES})
+add_executable(graph_app ${SOURCE_FILES} ${CUDA_SOURCES})
 
 # Make headers in this folder visible
 target_include_directories(graph_app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+#CUDA-specific properties (optional)
+set_target_properties(graph_app EXPORT_PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+    CUDA_ARCHITECTURES 86    
+)
 
 # After building graph_app, copy graph_data.txt into the build folder
 add_custom_command(TARGET graph_app

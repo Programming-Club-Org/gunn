@@ -92,12 +92,6 @@ vector<vector<float>> forward_kernel_call(
 
     float** d_weights;
     cudaMalloc(&d_weights,num_in_features*sizeof(float*));
-    /* for(int i=0;i<num_in_features;i++) {
-        float* d_weight;
-        cudaMalloc(&d_weight,num_out_features*sizeof(float));
-        cudaMemcpy(&d_weight,weight_matrix[i].data(),num_out_features*sizeof(float),cudaMemcpyHostToDevice);
-        cudaMemcpy(&d_weights[i],&d_weight,sizeof(float*),cudaMemcpyHostToDevice);
-    } */
     for (int i = 0; i < num_in_features; ++i) {
         float* d_weight;
         cudaMalloc(&d_weight, num_out_features * sizeof(float));
